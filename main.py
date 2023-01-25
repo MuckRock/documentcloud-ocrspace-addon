@@ -1,38 +1,65 @@
 """
-This is a hello world add-on for DocumentCloud.
-
-It demonstrates how to write a add-on which can be activated from the
-DocumentCloud add-on system and run using Github Actions.  It receives data
-from DocumentCloud via the request dispatch and writes data back to
-DocumentCloud using the standard API
+This is an example OCR add-on.  It demonstrates how to write a custom OCR
+add-on for DocumentCloud, using the editable text APIs
 """
 
+import os
+
+import requests
 from documentcloud.addon import AddOn
+from listcrunch import uncrunch
+
+URL = "https://api.ocr.space/parse/image"
 
 
-class HelloWorld(AddOn):
-    """An example Add-On for DocumentCloud."""
+class OCRSpace(AddOn):
+    """OCR your documents using OCRSpace"""
 
     def main(self):
-        """The main add-on functionality goes here."""
-        # fetch your add-on specific data
-        name = self.data.get("name", "world")
-
-        self.set_message("Hello World start!")
-
-        # add a hello note to the first page of each selected document
         for document in self.get_documents():
-            # get_documents will iterate through all documents efficiently,
-            # either selected or by query, dependeing on which is passed in
-            document.annotations.create(f"Hello {name}!", 0)
+            # get the dimensions of the pages
+            page_spec = [map(float, p.split("x")) for p in uncrunch(document.page_spec)]
+            if document.access != "public":
+                self.set_message("Document must be public")
+                return
+            data = {
+                "url": document.pdf_url,
+                "isOverlayRequired": True,
+                "language": document.language,
+            }
+            resp = requests.post(URL, headers={"apikey": os.environ["KEY"]}, data=data)
+            results = resp.json()
+            if results["IsErroredOnProcessing"]:
+                self.set_message(f"Error")
+                return
+            pages = []
+            for i, (page_results, (width, height)) in enumerate(
+                zip(results["ParsedResults"], page_spec)
+            ):
+                # ocrspace dimensions need a correction factor for some reason
+                width *= (4/3)
+                height *= (4/3)
 
-        with open("hello.txt", "w+") as file_:
-            file_.write("Hello world!")
-            self.upload_file(file_)
-
-        self.set_message("Hello World end!")
-        self.send_mail("Hello World!", "We finished!")
+                page = {
+                    "page_number": i,
+                    "text": page_results["ParsedText"],
+                    "ocr": "ocrspace1",
+                    "positions": [],
+                }
+                for line in page_results["TextOverlay"]["Lines"]:
+                    for word in line["Words"]:
+                        page["positions"].append(
+                            {
+                                "text": word["WordText"],
+                                "x1": (word["Left"] ) / width,
+                                "y1": (word["Top"] ) / height,
+                                "x2": (word["Left"] + word["Width"] ) / width,
+                                "y2": (word["Top"] + word["Height"] ) / height,
+                            }
+                        )
+                pages.append(page)
+            self.client.patch(f"/api/documents/{document.id}/", {"pages": pages})
 
 
 if __name__ == "__main__":
-    HelloWorld().main()
+    OCRSpace().main()
