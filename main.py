@@ -34,7 +34,7 @@ class OCRSpace(AddOn):
                 if results["IsErroredOnProcessing"]:
                     self.set_message(f"Error")
                     return
-            else: 
+            except: 
                 traceback.print_exc()
                 sys.exit(1)
             pages = []
