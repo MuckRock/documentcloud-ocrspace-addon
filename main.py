@@ -58,7 +58,7 @@ class OCRSpace(AddOn):
                             }
                         )
                 pages.append(page)
-            self.client.patch(f"/api/documents/{document.id}/", {"pages": pages})
+            self.client.patch(f"documents/{document.id}/", {"pages": pages})
 
 if __name__ == "__main__":
     OCRSpace().main()
