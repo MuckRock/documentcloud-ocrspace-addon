@@ -28,7 +28,7 @@ class OCRSpace(AddOn):
                 "language": document.language,
             }
             resp = requests.post(URL, headers={"apikey": os.environ["KEY"]}, data=data)
-            results = json.loads(response.text)
+            results = json.loads(resp.text)
             if results["IsErroredOnProcessing"]:
                 self.set_message(f"Error")
                 return
