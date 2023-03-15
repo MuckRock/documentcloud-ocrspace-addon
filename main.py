@@ -28,9 +28,8 @@ class OCRSpace(AddOn):
                 "language": document.language,
             }
             resp = requests.post(URL, headers={"apikey": os.environ["KEY"]}, data=data)
-            results = resp.json()
-            res = json.loads(results)
-            if res["IsErroredOnProcessing"]:
+            results = json.loads(response.text)
+            if results["IsErroredOnProcessing"]:
                 self.set_message(f"Error")
                 return
             pages = []
