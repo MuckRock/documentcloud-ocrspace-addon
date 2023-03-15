@@ -29,8 +29,6 @@ class OCRSpace(AddOn):
             }
             resp = requests.post(URL, headers={"apikey": os.environ["KEY"]}, data=data)
             results = json.loads(resp.text)
-            print(results)
-            """
             if results["IsErroredOnProcessing"]:
                 self.set_message(f"Error")
                 return
@@ -61,7 +59,6 @@ class OCRSpace(AddOn):
                         )
                 pages.append(page)
             self.client.patch(f"/api/documents/{document.id}/", {"pages": pages})
-            """
 
 if __name__ == "__main__":
     OCRSpace().main()
