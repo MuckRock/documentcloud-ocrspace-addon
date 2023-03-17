@@ -4,7 +4,6 @@ add-on for DocumentCloud, using the editable text APIs
 """
 
 import os
-import json
 import requests
 from documentcloud.addon import AddOn
 from listcrunch import uncrunch
@@ -28,7 +27,7 @@ class OCRSpace(AddOn):
                 "language": document.language,
             }
             resp = requests.post(URL, headers={"apikey": os.environ["KEY"]}, data=data)
-            results = json.loads(resp.text)
+            results = resp.json()
             if results["IsErroredOnProcessing"]:
                 self.set_message(f"Error")
                 return
