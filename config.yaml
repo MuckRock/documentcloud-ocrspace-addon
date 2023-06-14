@@ -10,3 +10,5 @@ type: object
 documents:
   - selected
 properties: {}
+categories:
+  - extraction
