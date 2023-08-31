@@ -4,6 +4,7 @@ add-on for DocumentCloud, using the editable text APIs
 """
 
 import os
+
 import requests
 from documentcloud.addon import AddOn
 from listcrunch import uncrunch
@@ -57,7 +58,8 @@ class OCRSpace(AddOn):
                             }
                         )
                 pages.append(page)
-            self.client.patch(f"documents/{document.id}/", {"pages": pages})
+            resp = self.client.patch(f"documents/{document.id}/", json={"pages": pages})
+            resp.raise_for_status()
 
 if __name__ == "__main__":
     OCRSpace().main()
