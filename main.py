@@ -4,7 +4,7 @@ add-on for DocumentCloud, using the editable text APIs
 """
 
 import os
-
+import sys
 import requests
 from documentcloud.addon import AddOn
 from listcrunch import uncrunch
@@ -16,7 +16,15 @@ class OCRSpace(AddOn):
     """OCR your documents using OCRSpace"""
 
     def main(self):
+        errors = 0
+        
         for document in self.get_documents():
+            # Check if the document size is larger than 5MB
+            if len(document.pdf) > 5 * 1024 * 1024:  # 5MB in bytes
+                self.set_message(f"Document {document.id} is greater than 5MB in size. Skipping this file.") 
+                errors += 1
+                continue
+
             # get the dimensions of the pages
             page_spec = [map(float, p.split("x")) for p in uncrunch(document.page_spec)]
             if document.access != "public":
@@ -60,6 +68,8 @@ class OCRSpace(AddOn):
                 pages.append(page)
             resp = self.client.patch(f"documents/{document.id}/", json={"pages": pages})
             resp.raise_for_status()
+        if errors > 0:    
+            self.set_message(f"Skipped {errors} files because they were too big")     
 
 if __name__ == "__main__":
     OCRSpace().main()
