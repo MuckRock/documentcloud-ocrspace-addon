@@ -19,7 +19,7 @@ class OCRSpace(AddOn):
         errors = 0
 
         # Make sure user selects some documents, otherwise returns
-        if not self.get_documents():
+        if self.get_documents() is None:
             self.set_message("No documents selected.")
             return
         
