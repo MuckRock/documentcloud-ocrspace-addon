@@ -68,9 +68,10 @@ class OCRSpace(AddOn):
                 pages.append(page)
             resp = self.client.patch(f"documents/{document.id}/", json={"pages": pages})
             resp.raise_for_status()
-        if errors > 0:
-            efiles = "file" if errors == 1 else "files"
-            self.set_message(f"Skipped  {errors} {efiles} because they were too big")     
+        if errors == 1:
+            self.set_message(f"Skipped one file because it was larger than 5MB in size.")  
+        if errors > 1:
+            self.set_message(f"Skipped {errors} files because they were larger than 5MB in size.") 
 
 if __name__ == "__main__":
     OCRSpace().main()
