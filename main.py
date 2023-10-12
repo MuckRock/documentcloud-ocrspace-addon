@@ -19,9 +19,7 @@ class OCRSpace(AddOn):
         errors = 0
 
         # Make sure user selects some documents, otherwise returns
-        if self.get_documents() is None:
-            self.set_message("No documents selected.")
-            return
+        print(self.get_documents)
         
         for document in self.get_documents():
             # Check if the document size is larger than 5MB
