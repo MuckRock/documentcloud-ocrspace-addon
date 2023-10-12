@@ -17,6 +17,10 @@ class OCRSpace(AddOn):
 
     def main(self):
         errors = 0
+
+        if not self.documents:
+            self.set_message("Please select at least one document")
+            return
         
         for document in self.get_documents():
             # Check if the document size is larger than 5MB
