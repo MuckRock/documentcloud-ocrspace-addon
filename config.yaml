@@ -4,7 +4,7 @@ description: >-
 
 
   **Note:** This free Add-On only works on small PDFs, <5MB in size. 
-  For bigger documents, use Tesseract, [docTR](https://www.documentcloud.org/app?q=%2B#add-ons/MuckRock/doctr-ocr-add-on), or a premium OCR engine like Textract, [Azure Document Intelligence](https://www.documentcloud.org/app?q=%2B#add-ons/MuckRock/documentcloud-azure-document-intelligence-ocr-addon), or [Google Cloud Vision](https://www.documentcloud.org/app?q=%2B#add-ons/MuckRock/documentcloud-cloud-vision-ocr). 
+  For bigger documents, use other free OCR engines supported by DocumentCloud like Tesseract or [docTR](https://www.documentcloud.org/app?q=%2B#add-ons/MuckRock/doctr-ocr-add-on).  Alternatively you can use a premium OCR engine like Textract, [Azure Document Intelligence](https://www.documentcloud.org/app?q=%2B#add-ons/MuckRock/documentcloud-azure-document-intelligence-ocr-addon) or [Google Cloud Vision](https://www.documentcloud.org/app?q=%2B#add-ons/MuckRock/documentcloud-cloud-vision-ocr). 
 
 type: object
 documents:
