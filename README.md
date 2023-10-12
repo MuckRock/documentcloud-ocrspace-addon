@@ -5,7 +5,7 @@
 
 # DocumentCloud OCRSpace Add-On
 
-OCR your documents using OCRSpace
+OCR your documents using OCRSpace. This Add-On only works on documents that are smaller than 5MB. 
 
 <https://ocr.space>
 
