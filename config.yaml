@@ -1,9 +1,6 @@
 title: OCRSpace
 description: >-
-  OCR your documents using OCRSpace
-
-  <https://ocr.space>
-
+  OCR your documents using [OCRSpace](https://ocr.space). 
   This free Add-On only works on small PDFs, that are smaller than 5MB in size. 
 
   For bigger documents, use Tesseract, docTR, or a premium OCR engine like Textract, Azure Document Intelligence, or Google Cloud Vision. 
