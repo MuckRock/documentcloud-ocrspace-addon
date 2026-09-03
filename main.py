@@ -66,8 +66,8 @@ class OCRSpace(AddOn):
             }
             resp = requests.post(URL, headers={"apikey": os.environ["KEY"]}, data=data)
             results = resp.json()
-            if results["IsErroredOnProcessing"]:
-                self.set_message(f"Error")
+            if results.get("IsErroredOnProcessing"):
+                self.set_message(f"OCRSpace error: {results.get('ErrorMessage')}")
                 return
             pages = []
             for i, (page_results, (width, height)) in enumerate(
