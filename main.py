@@ -49,7 +49,7 @@ class OCRSpace(AddOn):
         to_tag = self.data.get("to_tag", False)
         for document in self.get_documents():
             # Check if the document size is larger than 5MB
-            if len(document.pdf) > 5 * 1024 * 1024:  # 5MB in bytes
+            if len(document.pdf) > 1 * 1024 * 1024:  # 5MB in bytes
                 self.set_message(f"Document {document.id} is greater than 5MB in size. Skipping this file.") 
                 errors += 1
                 continue
@@ -67,7 +67,9 @@ class OCRSpace(AddOn):
             resp = requests.post(URL, headers={"apikey": os.environ["KEY"]}, data=data)
             results = resp.json()
             if results.get("IsErroredOnProcessing"):
-                self.set_message(f"OCRSpace error: {results.get('ErrorMessage')}")
+                print(f"Error: {results.get('ErrorMessage')}")
+                print(f"Details: {results.get('ErrorDetails')}")
+                self.set_message("Error")
                 return
             pages = []
             for i, (page_results, (width, height)) in enumerate(
