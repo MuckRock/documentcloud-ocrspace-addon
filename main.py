@@ -5,8 +5,10 @@ add-on for DocumentCloud, using the editable text APIs
 
 import os
 import sys
+import time
 import requests
 from documentcloud.addon import AddOn
+from documentcloud.exceptions import APIError
 from listcrunch import uncrunch
 
 URL = "https://api.ocr.space/parse/image"
@@ -48,37 +50,49 @@ class OCRSpace(AddOn):
         errors = 0
         to_tag = self.data.get("to_tag", False)
         for document in self.get_documents():
-            # Check if the document size is larger than 5MB
-            if len(document.pdf) > 1 * 1024 * 1024:  # 5MB in bytes
-                self.set_message(f"Document {document.id} is greater than 5MB in size. Skipping this file.") 
+            pdf_bytes = document.pdf  # fetch once, reuse
+
+            # Check if the document is larger than 1MB (OCRSpace free tier cap)
+            if len(pdf_bytes) > 1 * 1024 * 1024:
+                self.set_message(
+                    f"Document {document.id} is greater than 1MB in size. "
+                    "Skipping this file."
+                )
                 errors += 1
                 continue
 
-            # get the dimensions of the pages
-            page_spec = [map(float, p.split("x")) for p in uncrunch(document.page_spec)]
             if document.access != "public":
                 self.set_message("Document must be public")
                 return
+
+            # get the dimensions of the pages
+            page_spec = [map(float, p.split("x")) for p in uncrunch(document.page_spec)]
+
             data = {
-                "url": document.pdf_url,
                 "isOverlayRequired": True,
                 "language": document.language,
                 "filetype": "PDF",
             }
-            resp = requests.post(URL, headers={"apikey": os.environ["KEY"]}, data=data)
+            resp = requests.post(
+                URL,
+                headers={"apikey": os.environ["KEY"]},
+                data=data,
+                files={"file": ("document.pdf", pdf_bytes, "application/pdf")},
+            )
             results = resp.json()
             if results.get("IsErroredOnProcessing"):
                 print(f"Error: {results.get('ErrorMessage')}")
                 print(f"Details: {results.get('ErrorDetails')}")
                 self.set_message("Error")
                 return
+
             pages = []
             for i, (page_results, (width, height)) in enumerate(
                 zip(results["ParsedResults"], page_spec)
             ):
                 # ocrspace dimensions need a correction factor for some reason
-                width *= (4/3)
-                height *= (4/3)
+                width *= (4 / 3)
+                height *= (4 / 3)
 
                 page = {
                     "page_number": i,
@@ -91,10 +105,10 @@ class OCRSpace(AddOn):
                         page["positions"].append(
                             {
                                 "text": word["WordText"],
-                                "x1": (word["Left"] ) / width,
-                                "y1": (word["Top"] ) / height,
-                                "x2": (word["Left"] + word["Width"] ) / width,
-                                "y2": (word["Top"] + word["Height"] ) / height,
+                                "x1": (word["Left"]) / width,
+                                "y1": (word["Top"]) / height,
+                                "x2": (word["Left"] + word["Width"]) / width,
+                                "y2": (word["Top"] + word["Height"]) / height,
                             }
                         )
                 pages.append(page)
@@ -102,11 +116,14 @@ class OCRSpace(AddOn):
             resp.raise_for_status()
             if to_tag:
                 self.tag_document(document)
+
         if errors == 1:
-            self.set_message(f"Skipped one file because it was larger than 5MB in size.")  
+            self.set_message("Skipped one file because it was larger than 1MB in size.")
         if errors > 1:
-            self.set_message(f"Skipped {errors} files because they were larger than 5MB in size.")
-        
+            self.set_message(
+                f"Skipped {errors} files because they were larger than 1MB in size."
+            )
+
 
 if __name__ == "__main__":
     OCRSpace().main()
