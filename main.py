@@ -15,9 +15,38 @@ URL = "https://api.ocr.space/parse/image"
 class OCRSpace(AddOn):
     """OCR your documents using OCRSpace"""
 
+    def tag_document(self, document, max_retries=5, retry_delay=60):
+        """Tag the document with the OCR engine, retrying on API errors."""
+        retries = 0
+        while retries < max_retries:
+            try:
+                print("Tagging document...")
+                existing = document.data.get("ocr_engine", [])
+                self.client.patch(
+                    f"documents/{document.id}/data/ocr_engine/",
+                    json={"values": ["azure"], "remove": existing},
+                )
+                self.client.patch(
+                    f"documents/{document.id}/data/ocr_engine/",
+                    json={"values": ["azure"]},
+                )
+                print("Finished tagging document")
+                break
+            except APIError as exc:
+                print(f"Error tagging document. {exc}. Retrying...")
+                retries += 1
+                time.sleep(retry_delay)
+        else:
+            print(f"Failed to tag document after {max_retries} attempts.")
+            self.set_message(
+                "Failed to set the OCR tag for this document. "
+                "Email info@documentcloud.org to debug."
+            )
+            sys.exit(1)
+
     def main(self):
         errors = 0
-        
+        to_tag = self.data.get("to_tag", False)
         for document in self.get_documents():
             # Check if the document size is larger than 5MB
             if len(document.pdf) > 5 * 1024 * 1024:  # 5MB in bytes
@@ -68,10 +97,13 @@ class OCRSpace(AddOn):
                 pages.append(page)
             resp = self.client.patch(f"documents/{document.id}/", json={"pages": pages})
             resp.raise_for_status()
+            if to_tag:
+                self.tag_document(document)
         if errors == 1:
             self.set_message(f"Skipped one file because it was larger than 5MB in size.")  
         if errors > 1:
-            self.set_message(f"Skipped {errors} files because they were larger than 5MB in size.") 
+            self.set_message(f"Skipped {errors} files because they were larger than 5MB in size.")
+        
 
 if __name__ == "__main__":
     OCRSpace().main()
