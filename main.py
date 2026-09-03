@@ -105,10 +105,10 @@ class OCRSpace(AddOn):
                         page["positions"].append(
                             {
                                 "text": word["WordText"],
-                                "x1": (word["Left"]) / width,
-                                "y1": (word["Top"]) / height,
-                                "x2": (word["Left"] + word["Width"]) / width,
-                                "y2": (word["Top"] + word["Height"]) / height,
+                                "x1": min((word["Left"]) / width, 1.0),
+                                "y1": min((word["Top"]) / height, 1.0),
+                                "x2": min((word["Left"] + word["Width"]) / width, 1.0),
+                                "y2": min((word["Top"] + word["Height"]) / height, 1.0),
                             }
                         )
                 pages.append(page)
