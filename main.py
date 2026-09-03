@@ -30,7 +30,7 @@ class OCRSpace(AddOn):
                 )
                 self.client.patch(
                     f"documents/{document.id}/data/ocr_engine/",
-                    json={"values": ["azure"]},
+                    json={"values": ["ocrspace"]},
                 )
                 print("Finished tagging document")
                 break
