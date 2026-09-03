@@ -63,6 +63,7 @@ class OCRSpace(AddOn):
                 "url": document.pdf_url,
                 "isOverlayRequired": True,
                 "language": document.language,
+                "filetype": "PDF",
             }
             resp = requests.post(URL, headers={"apikey": os.environ["KEY"]}, data=data)
             results = resp.json()
